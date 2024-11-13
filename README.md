@@ -1,2 +1,2 @@
 # Forecasting-Model
-Module for timeseries forecasting with transformer and can
+Module for timeseries forecasting with transformer and kan
