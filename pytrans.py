@@ -117,7 +117,7 @@ class LTSTransformer(nn.Module):
 
   def forward(self, x):
     # (bsz, in_w) -> (in_w+out_w, bsz, 1)
-    x = torch.cat((x, torch.zeros(x.size(0), self.out_w)))
+    x = torch.cat((x, torch.zeros(x.size(0), self.out_w)), dim=0)
     x = x.view(x.size(0), x.size(1), 1).permute(1,0,2)
 
     self.mask = self.generate_mask(x.shape[0]).to(x.device)
