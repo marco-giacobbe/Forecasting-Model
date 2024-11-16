@@ -97,8 +97,10 @@ class EncoderLayer(nn.Module):
     return x
   
 class LTSTransformer(nn.Module):
-  def __init__(self, d_model, nhead, ff, nlayer, dropout=0.1, kan=False, finetuning=False):
+  def __init__(self, in_w, out_w, d_model, nhead, ff, nlayer, dropout=0.1, kan=False, finetuning=False):
     super(LTSTransformer, self).__init__()
+    self.in_w = in_w
+    self.out_w = out_w
     self.pos_encoder = PositionalEncoding(d_model, max_len=300)
     self.encoder = nn.ModuleList([EncoderLayer(d_model, nhead, ff, dropout) for _ in range(nlayer)])
     self.decoder = KAN([d_model, 1]) if kan else nn.Linear(d_model, 1)
@@ -114,9 +116,17 @@ class LTSTransformer(nn.Module):
 
 
   def forward(self, x):
+    # (bsz, in_w) -> (in_w+out_w, bsz, 1)
+    x = torch.cat((x, torch.zeros(x.size(0), self.out_w)))
+    x = x.view(x.size(0), x.size(1), 1).permute(1,0,2)
+
     self.mask = self.generate_mask(x.shape[0]).to(x.device)
 
+    # push input through nn
     x = self.pos_encoder(x)
     for layer in self.encoder:
       x = layer(x, self.mask)
-    return self.decoder(x)
+    x = self.decoder(x)
+
+    # (in_w+out_w, bsz, 1) -> (bsz, out_w)
+    return x.view(x.size(0), x.size(1)).permute(1,0)[:, self.out_w:]
