@@ -129,4 +129,4 @@ class LTSTransformer(nn.Module):
     x = self.decoder(x)
 
     # (in_w+out_w, bsz, 1) -> (bsz, out_w)
-    return x.view(x.size(0), x.size(1)).permute(1,0)[:, -self.out_w]
+    return x.view(x.size(0), x.size(1)).permute(1,0)[:, -self.out_w:]
