@@ -180,6 +180,7 @@ class KAN(nn.Module):
         base_activation=torch.nn.SiLU,
         grid_eps=0.02,
         grid_range=[-1, 1],
+        fine_tuning=False
     ):
         super(KAN, self).__init__()
         self.grid_size = grid_size
@@ -201,6 +202,9 @@ class KAN(nn.Module):
                     grid_range=grid_range,
                 )
             )
+        if fine_tuning:
+            for param in self.layers[-1].parameters():
+                param.requires_grad = False
 
     def forward(self, x):
         for layer in self.layers:
